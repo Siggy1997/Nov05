@@ -10,4 +10,15 @@ public interface QnaDAO {
 
 	List<Map<String, Object>> qnaList();
 
+	Map<String, Object> qnaQuestion(int bno);
+
+	List<Map<String, Object>> qnaAnswer(int bno);
+
+	void postQna(Map<String, Object> qnaData);
+
+	void writeQnaAnswer(Map<String, Object> qnaAnswerData);
+
+	int commentCount(int bno);
+
+
 }

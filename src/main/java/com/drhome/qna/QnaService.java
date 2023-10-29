@@ -14,4 +14,25 @@ public class QnaService {
 	public List<Map<String, Object>> qnaList() {
 		return qnaDAO.qnaList();
 	}
+
+	public Map<String, Object> qnaQuestion(int bno) {
+		return qnaDAO.qnaQuestion(bno);
+	}
+
+	public List<Map<String, Object>> qnaAnswer(int bno) {
+		return qnaDAO.qnaAnswer(bno);
+	}
+
+	public void postQna(Map<String, Object> qnaData) {
+		qnaDAO.postQna(qnaData);
+	}
+
+	public void writeQnaAnswer(Map<String, Object> qnaAnswerData) {
+		qnaDAO.writeQnaAnswer(qnaAnswerData);
+
+	}
+
+	public int commentCount(int bno) {
+		return qnaDAO.commentCount(bno);
+	}
 }

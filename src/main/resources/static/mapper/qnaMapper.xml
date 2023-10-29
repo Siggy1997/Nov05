@@ -3,11 +3,44 @@
 <mapper namespace="com.drhome.qna.QnaDAO">
 
 	<select id="qnaList" resultType="Map">
-	SELECT board.bno, board.btitle, board.bdetail, COUNT(comment.cno) AS comment_count
-FROM board
-LEFT JOIN comment ON board.bno = comment.bno
-GROUP BY board.bno, board.btitle, board.bdetail
-ORDER BY board.bno DESC;
+		SELECT board.bno, board.btitle, board.bcontent, COUNT(comment.cno) AS
+		comment_count
+		FROM board
+		LEFT JOIN comment ON board.bno = comment.bno
+		WHERE board.btype = 0
+		GROUP BY board.bno, board.btitle, board.bcontent
+		ORDER BY board.bno DESC;
 	</select>
+
+	<select id="qnaQuestion" parameterType="Integer"
+		resultType="Map">
+		SELECT bno, btitle, bcontent, bdate
+		FROM board
+		WHERE
+		bno=#{bno}
+	</select>
+
+	<select id="qnaAnswer" parameterType="Integer" resultType="Map">
+		SELECT comment.hno, comment.dno, comment.cdate, comment.ccontent
+		FROM comment
+		LEFT JOIN board ON comment.bno = board.bno
+		WHERE board.bno = #{bno} AND comment.dno IS NOT NULL
+		GROUP BY comment.hno, comment.dno, comment.cdate, comment.ccontent
+		ORDER BY comment.cno DESC;
+	</select>
+
+	<insert id="postQna" parameterType="Map">
+		INSERT INTO board (btitle, bcontent, bdate, btype, mno)
+		VALUES (#{btitle}, #{bcontent}, #{bdate}, #{btype}, #{mno})
+	</insert>
+	
+	<select id="commentCount" parameterType="Integer" resultType="Integer">
+		  SELECT COUNT(cno) FROM comment WHERE bno = #{bno}
+	</select>
+	
+	<insert id="writeQnaAnswer" parameterType="Map">
+		INSERT INTO comment (bno, dno, hno, cno, ccontent, cdate)
+		VALUES (#{bno}, #{dno}, #{hno}, #{cno}, #{ccontent}, #{cdate})
+	</insert>
 
 </mapper>

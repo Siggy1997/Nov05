@@ -12,27 +12,38 @@
 </head>
 <body>
 
+<button onclick="location.href='writeQna'">작성하기</button>
 
-    <c:forEach items="${qnaList}" var="qna">
-     <a href="<c:url value='/detail'/>?bno=${qna.bno}">
-    <div class="table">   
+    <c:forEach items="${qnaList}" var="qna"> 
+     <a href="<c:url value='/qnaDetail'>
+    <c:param name='bno' value='${qna.bno}' />
+  </c:url>">
+    <div class="list"> 
       <div class="title">${qna.btitle}</div>
-      <div class="detail">${qna.bdetail}</div>
-      <div class="count">${qna.comment_count}</div><br>
+      <div class="content">${qna.bcontent}</div>
+     <c:choose>
+    <c:when test="${qna.comment_count == 0}">
+        "답변 대기 중"
+    </c:when>
+    <c:otherwise>
+        <div class="count">${qna.comment_count}</div>
+    </c:otherwise>
+</c:choose>
 </div>
 </a>
+<br>
     </c:forEach>
 
 <script>
     var maxLength = 30; // 최대 문자열 길이
-    var detailElements = document.querySelectorAll(".detail");
+    var contentElements = document.querySelectorAll(".content");
 
-    detailElements.forEach(function(detailElement) {
-        var text = detailElement.textContent;
+    contentElements.forEach(function(contentElement) {
+        var text = contentElement.textContent;
 
         if (text.length > maxLength) {
             var truncatedText = text.slice(0, maxLength) + "...";
-            detailElement.textContent = truncatedText;
+            contentElement.textContent = truncatedText;
         }
     });
 </script>
