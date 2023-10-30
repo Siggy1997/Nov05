@@ -21,20 +21,22 @@
 		<div class="bdate">${qnaQuestion.bdate}</div>
 	</div>
 
-	<button type="button" id="answerToggleButton">답변 작성하기</button>
-	답변 작성하기
+	<c:if test="${not empty hno}">
+		<button type="button" id="answerToggleButton">답변 작성하기</button>
+	</c:if>
+
 	<div id="formContainer" style="display: none;">
-	<form action="./writeQnaAnswer" method="post" id="qnaAnswerForm">
-		<div>
-			내용
-			<textarea rows="5" cols="13" name="ccontent" id="ccontent"
-				style="display: none;"></textarea>
-		</div>
-		<input type="hidden" name="cdate" id="cdate">
-		<input type="hidden" name="bno" id="bno" value="${qnaQuestion.bno}">
-		<button type="submit" id="submitAnswerButton">완료</button>
-		<button type="button" id="cancelAnswerButton">취소</button>
-	</form>
+		<form action="./writeQnaAnswer" method="post" id="qnaAnswerForm">
+			<div>
+				내용
+				<textarea rows="5" cols="13" name="ccontent" id="ccontent"
+					style="display: none;"></textarea>
+			</div>
+			<input type="hidden" name="cdate" id="cdate"> <input
+				type="hidden" name="bno" id="bno" value="${qnaQuestion.bno}">
+			<button type="submit" id="submitAnswerButton">완료</button>
+			<button type="button" id="cancelAnswerButton">취소</button>
+		</form>
 	</div>
 
 
@@ -45,6 +47,13 @@
 			<div class="doctorNum">${answer.dno}</div>
 			<div class="cdetail">${answer.ccontent}</div>
 			<div class="cdate">${answer.cdate}</div>
+			<c:if test="${answer.hno eq hno}">
+				<form action="deleteQnaAnswer" method="post" id="deleteQnaAnswer">
+				<input type="hidden" name="cno" id="cno" value="${answer.cno}">
+					<input type="hidden" name="bno" id="bno" value="${qnaQuestion.bno}">
+					<button class="cdelete">삭제하기</button>
+				</form>
+			</c:if>
 			<br>
 		</c:forEach>
 	</div>
@@ -53,6 +62,7 @@
 
 
 	<script>
+		//날짜, 시간 변환하기
 		function updateDate(element, dateString) {
 			const postTime = new Date(dateString);
 			const currentTime = new Date();
@@ -108,35 +118,39 @@
 					const content = document
 							.querySelector('textarea[name="ccontent"]').value;
 
-					
 					// 폼 제출
 					this.submit();
 				});
 
-		// "답변 작성하기" 버튼 클릭 이벤트 처리
-		document.getElementById('answerToggleButton').addEventListener('click', function() {
-		    // textarea 요소 가져오기
-		    const textarea = document.getElementById('ccontent');
+		// "답변 작성하기" 버튼 클릭 시 답변 입력창 나타내기
+		document.getElementById('answerToggleButton').addEventListener(
+				'click',
+				function() {
 
-		    // formContainer 요소 가져오기
-		    const formContainer = document.getElementById('formContainer');
+					const textarea = document.getElementById('ccontent');
+					const formContainer = document
+							.getElementById('formContainer');
 
-		    // textarea와 formContainer를 토글(나타나거나 숨기기)
-		    if (textarea.style.display === 'none') {
-		        textarea.style.display = 'block';
-		        formContainer.style.display = 'block';
-		    } else {
-		        textarea.style.display = 'none';
-		        formContainer.style.display = 'none';
-		    }
-		});
+					// textarea와 formContainer(나타나거나 숨기기)
+					if (textarea.style.display === 'none') {
+						textarea.style.display = 'block';
+						formContainer.style.display = 'block';
+					} else {
+						textarea.style.display = 'none';
+						formContainer.style.display = 'none';
+					}
+				});
 
-		// "취소" 버튼 클릭 이벤트 처리
-		document.getElementById('cancelAnswerButton').addEventListener('click', function() {
-		    // textarea와 formContainer를 숨김
-		    document.getElementById('ccontent').style.display = 'none';
-		    document.getElementById('formContainer').style.display = 'none';
-		});
+		// "취소" 버튼 클릭 시 답변 입력창 가리기 
+		document
+				.getElementById('cancelAnswerButton')
+				.addEventListener(
+						'click',
+						function() {
+							// textarea와 formContainer를 숨김
+							document.getElementById('ccontent').style.display = 'none';
+							document.getElementById('formContainer').style.display = 'none';
+						});
 	</script>
 
 </body>

@@ -22,7 +22,7 @@
 		</div>
 		<input type="hidden" name="bdate" id="bdate">
 		<button type="submit">완료</button>
-		<button type="button" onclick="location.href='qna'">목록</button>
+		<button type="button" onclick="location.href='qnaBoard'">목록</button>
 	</form>
 
 	<div id="imagePreview"></div>

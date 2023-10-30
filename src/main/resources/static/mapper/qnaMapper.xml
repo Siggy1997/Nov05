@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.drhome.qna.QnaDAO">
+<mapper namespace="com.drhome.qna.QnaBoardDAO">
 
 	<select id="qnaList" resultType="Map">
-		SELECT board.bno, board.btitle, board.bcontent, COUNT(comment.cno) AS
+		SELECT board.bno, board.btitle,
+		board.bcontent, COUNT(comment.cno) AS
 		comment_count
 		FROM board
-		LEFT JOIN comment ON board.bno = comment.bno
+		LEFT JOIN
+		comment ON board.bno = comment.bno
 		WHERE board.btype = 0
-		GROUP BY board.bno, board.btitle, board.bcontent
+		GROUP BY
+		board.bno, board.btitle, board.bcontent
 		ORDER BY board.bno DESC;
 	</select>
 
@@ -21,26 +24,51 @@
 	</select>
 
 	<select id="qnaAnswer" parameterType="Integer" resultType="Map">
-		SELECT comment.hno, comment.dno, comment.cdate, comment.ccontent
-		FROM comment
+		SELECT comment.hno, comment.dno, comment.cno, comment.cdate,
+		comment.ccontent
+		FROM
+		comment
 		LEFT JOIN board ON comment.bno = board.bno
-		WHERE board.bno = #{bno} AND comment.dno IS NOT NULL
-		GROUP BY comment.hno, comment.dno, comment.cdate, comment.ccontent
-		ORDER BY comment.cno DESC;
+		WHERE board.bno =
+		#{bno} AND comment.dno IS NOT NULL
+		GROUP BY
+		comment.hno, comment.dno,
+		comment.cdate, comment.ccontent
+		ORDER BY
+		comment.cno DESC;
 	</select>
 
 	<insert id="postQna" parameterType="Map">
-		INSERT INTO board (btitle, bcontent, bdate, btype, mno)
-		VALUES (#{btitle}, #{bcontent}, #{bdate}, #{btype}, #{mno})
+		INSERT INTO board (btitle,
+		bcontent, bdate, btype, mno)
+		VALUES (#{btitle}, #{bcontent}, #{bdate},
+		#{btype}, #{mno})
 	</insert>
-	
-	<select id="commentCount" parameterType="Integer" resultType="Integer">
-		  SELECT COUNT(cno) FROM comment WHERE bno = #{bno}
+
+	<select id="commentCount" parameterType="Integer"
+		resultType="Integer">
+		SELECT COUNT(cno) FROM comment WHERE bno = #{bno}
 	</select>
-	
+
 	<insert id="writeQnaAnswer" parameterType="Map">
-		INSERT INTO comment (bno, dno, hno, cno, ccontent, cdate)
-		VALUES (#{bno}, #{dno}, #{hno}, #{cno}, #{ccontent}, #{cdate})
+		INSERT INTO comment
+		(bno, dno, hno, cno, ccontent, cdate)
+		VALUES (#{bno}, #{dno}, #{hno},
+		#{cno}, #{ccontent}, #{cdate})
 	</insert>
+
+	<delete id="deleteQnaAnswer" parameterType="Map">
+		DELETE FROM comment
+		WHERE bno = #{bno} AND cno = #{cno}
+	</delete>
+
+<select id="boardSearch" parameterType="String" resultType="Map">
+    SELECT b.*
+    FROM board b
+    WHERE b.btitle LIKE CONCAT('%', '${searchWord}', '%')
+    OR b.bcontent LIKE CONCAT('%', '${searchWord}', '%')
+    OR EXISTS (SELECT 1 FROM comment c WHERE c.bno = b.bno AND c.ccontent
+    LIKE CONCAT('%', '${searchWord}', '%'));
+</select>
 
 </mapper>
