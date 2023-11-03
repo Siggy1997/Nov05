@@ -22,7 +22,23 @@ public interface QnaBoardDAO {
 
 	void deleteQnaAnswer(Map<String, Object> deleteQnaAnswerData);
 
-	List<Map<String, Object>> boardSearch(String searchWord);
+	List<Map<String, Object>> boardSearchAll(String searchWord);
+
+	void addQnaCallDibs(Map<String, Object> qnaCallDibsData);
+
+	void delQnaCallDibs(Map<String, Object> qnaCallDibsData);
+
+	List<Map<String, Object>> doctorInfo(List<Integer> dnoList);
+
+	void deleteQnaQuestion(Map<String, Object> deleteQnaQuestionData);
+
+	void reportPost(Map<String, Object> reportData);
+
+	List<Map<String, Object>> boardSearchTitle(String searchWord);
+
+	List<Map<String, Object>> boardSearchContent(String searchWord);
+
+	int reportCount(Map<String, Object> reportCountData);
 
 
 }

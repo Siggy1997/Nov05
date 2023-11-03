@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.drhome.free.FreeBoardDAO">
+
+	<select id="freeList" resultType="Map">
+		SELECT board.bno, board.btitle,
+		board.bcontent, COUNT(comment.cno) AS
+		comment_count
+		FROM board
+		LEFT JOIN
+		comment ON board.bno = comment.bno
+		WHERE board.btype = 1
+		GROUP BY
+		board.bno, board.btitle, board.bcontent
+		ORDER BY board.bno DESC;
+	</select>
+
+
+	<select id="freePosting" parameterType="Integer"
+		resultType="Map">
+		SELECT
+		board.mno, board.bno, board.btitle, board.bcontent,
+		board.bdate, board.bcalldibs,
+		member.mnickname
+		FROM
+		board
+		JOIN
+		member ON board.mno =
+		member.mno
+		WHERE
+		board.bno = #{bno};
+	</select>
+
+
+	<select id="freeComment" parameterType="Integer"
+		resultType="Map">
+		SELECT comment.mno, comment.cno, comment.cdate,
+		comment.ccontent
+		FROM
+		comment
+		LEFT JOIN board ON comment.bno = board.bno
+		WHERE board.bno = #{bno}
+		GROUP BY
+		comment.mno,
+		comment.cdate,
+		comment.ccontent
+		ORDER BY
+		comment.cno ASC;
+	</select>
+
+	<insert id="postFree" parameterType="Map">
+		INSERT INTO board (btitle,
+		bcontent, bdate, btype, mno)
+		VALUES (#{btitle}, #{bcontent}, #{bdate},
+		#{btype}, #{mno})
+	</insert>
+	
+	<update id="addFreePostLike" parameterType="Map">
+		UPDATE board
+		SET
+		bcalldibs = CASE
+		WHEN bcalldibs IS NULL THEN #{mno}
+		ELSE
+		CONCAT(bcalldibs, ',', #{mno})
+		END
+		WHERE bno=#{bno}
+	</update>
+
+
+	<update id="delFreePostLike" parameterType="Map">
+		UPDATE board
+		SET
+		bcalldibs =
+		CASE
+		WHEN CONCAT(',', bcalldibs, ',') LIKE CONCAT('%,',
+		#{mno}, ',%') THEN
+		TRIM(BOTH ',' FROM REPLACE(CONCAT(',', bcalldibs,
+		','), CONCAT(',',
+		#{mno}, ','), ','))
+		ELSE bcalldibs
+		END
+		WHERE bno =
+		#{bno}
+	</update>
+
+	<select id="commentCount" parameterType="Integer"
+		resultType="Integer">
+		SELECT COUNT(cno) FROM comment WHERE bno = #{bno}
+	</select>
+
+	<insert id="writeFreeComment" parameterType="Map">
+		INSERT INTO comment
+		(bno, mno, ccontent, cdate)
+		VALUES (#{bno}, #{mno}, #{ccontent},
+		#{cdate})
+	</insert>
+
+	<delete id="deleteFreeComment" parameterType="Map">
+		DELETE FROM comment
+		WHERE bno = #{bno} AND cno = #{cno}
+	</delete>
+
+<select id="reportCount" parameterType="Map"
+		resultType="Integer">
+		SELECT COUNT(rpno) FROM report WHERE bno = #{bno} AND
+		rpreporterno = #{mno}
+	</select>
+
+<insert id="reportFreePost" parameterType="Map">
+	INSERT INTO report
+		(rpreporterno, bno, rpcontent, rpurl, rpdate, mno) VALUES (#{mno},
+		#{bno}, #{rpcontent}, #{rpurl}, #{rpdate}, (SELECT mno FROM board
+		WHERE bno = #{bno}))
+	</insert>
+
+<select id="commentReportCount" parameterType="Integer"
+		resultType="Integer">
+		SELECT COUNT(rpno) FROM report WHERE cno = #{cno} AND
+		rpreporterno = #{mno}
+	</select>
+
+	<insert id="reportFreeComment" parameterType="Map">
+INSERT INTO report
+		(rpreporterno, rpcontent, rpurl, rpdate, cno, mno) VALUES (#{mno},
+		 #{rpcontent}, #{rpurl}, #{rpdate}, #{cno}, (SELECT mno FROM comment
+		WHERE cno = #{cno}))
+	</insert>
+
+</mapper>

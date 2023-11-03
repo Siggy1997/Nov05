@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.drhome.qna.QnaBoardDAO">
+
+	<select id="qnaList" resultType="Map">
+		SELECT board.bno, board.btitle,
+		board.bcontent, COUNT(comment.cno) AS
+		comment_count
+		FROM board
+		LEFT JOIN
+		comment ON board.bno = comment.bno
+		WHERE board.btype = 0
+		GROUP BY
+		board.bno, board.btitle, board.bcontent
+		ORDER BY board.bno DESC;
+	</select>
+
+	<select id="qnaQuestion" parameterType="Integer"
+		resultType="Map">
+		SELECT board.bno, board.btitle, board.bcontent,
+		board.bdate, board.bcalldibs, member.mno
+		FROM board
+		LEFT JOIN member ON
+		board.mno = member.mno
+		WHERE board.bno = #{bno};
+	</select>
+
+	<select id="qnaAnswer" parameterType="Integer" resultType="Map">
+		SELECT comment.hno, comment.dno, comment.cno, comment.cdate,
+		comment.ccontent
+		FROM
+		comment
+		LEFT JOIN board ON comment.bno = board.bno
+		WHERE board.bno =
+		#{bno} AND comment.dno IS NOT NULL
+		GROUP BY
+		comment.hno, comment.dno,
+		comment.cdate, comment.ccontent
+		ORDER BY
+		comment.cno DESC;
+	</select>
+
+	<select id="doctorInfo" parameterType="Integer" resultType="Map">
+		SELECT dv.dname, dv.dimg, dv.dinfo, dv.dpkind, dv.dcareer, dv.hno,
+		dv.reviewAverage, hv.hname, hv.hospitalDepartments
+		FROM doctorinfo_view
+		dv
+		INNER JOIN hospitalinfo_view hv ON dv.hno = hv.hno
+		WHERE dv.dno IN
+		<foreach item="dno" collection="list" open="(" separator=","
+			close=")"> #{dno}
+		</foreach>
+	</select>
+
+	<insert id="postQna" parameterType="Map">
+		INSERT INTO board (btitle,
+		bcontent, bdate, btype, mno)
+		VALUES (#{btitle}, #{bcontent}, #{bdate},
+		#{btype}, #{mno})
+	</insert>
+
+	<select id="commentCount" parameterType="Integer"
+		resultType="Integer">
+		SELECT COUNT(cno) FROM comment WHERE bno = #{bno}
+	</select>
+
+	<insert id="writeQnaAnswer" parameterType="Map">
+		INSERT INTO comment
+		(bno, dno, hno, ccontent, cdate)
+		VALUES (#{bno}, #{dno}, #{hno},
+		#{ccontent}, #{cdate})
+	</insert>
+
+	<delete id="deleteQnaAnswer" parameterType="Map">
+		DELETE FROM comment
+		WHERE bno = #{bno} AND cno = #{cno}
+	</delete>
+
+	<update id="addQnaCallDibs" parameterType="Map">
+		UPDATE board
+		SET
+		bcalldibs = CASE
+		WHEN bcalldibs IS NULL THEN #{mno}
+		ELSE
+		CONCAT(bcalldibs, ',', #{mno})
+		END
+		WHERE bno=#{bno}
+	</update>
+
+	<update id="delQnaCallDibs" parameterType="Map">
+		UPDATE board
+		SET
+		bcalldibs =
+		CASE
+		WHEN CONCAT(',', bcalldibs, ',') LIKE CONCAT('%,',
+		#{mno}, ',%') THEN
+		TRIM(BOTH ',' FROM REPLACE(CONCAT(',', bcalldibs,
+		','), CONCAT(',',
+		#{mno}, ','), ','))
+		ELSE bcalldibs
+		END
+		WHERE bno =
+		#{bno}
+	</update>
+
+	<update id="deleteQnaQuestion" parameterType="Map">
+		UPDATE board
+		SET
+		btype = #{btype}
+		WHERE bno=#{bno}
+	</update>
+
+	<select id="reportCount" parameterType="Map"
+		resultType="Integer">
+		SELECT COUNT(rpno) FROM report WHERE bno = #{bno} AND
+		rpreporterno = #{mno}
+	</select>
+
+	<insert id="reportPost" parameterType="Map">
+	INSERT INTO report
+		(rpreporterno, bno, rpcontent, rpurl, rpdate, mno) VALUES (#{mno},
+		#{bno}, #{rpcontent}, #{rpurl}, #{rpdate}, (SELECT mno FROM board
+		WHERE bno = #{bno}))
+	</insert>
+
+	<select id="boardSearchAll" parameterType="String"
+		resultType="Map">
+		SELECT b.*
+		FROM board b
+		WHERE b.btitle LIKE CONCAT('%',
+		'${searchWord}',
+		'%')
+		OR b.bcontent LIKE CONCAT('%', '${searchWord}',
+		'%')
+		OR EXISTS
+		(SELECT 1 FROM comment c WHERE c.bno = b.bno AND
+		c.ccontent
+		LIKE
+		CONCAT('%', '${searchWord}', '%'));
+	</select>
+
+	<select id="boardSearchTitle" parameterType="String"
+		resultType="Map">
+		SELECT b.*
+		FROM board b
+		WHERE b.btitle LIKE CONCAT('%',
+		'${searchWord}', '%');
+	</select>
+
+	<select id="boardSearchContent" parameterType="String"
+		resultType="Map">
+		SELECT b.*
+		FROM board b
+		WHERE b.bcontent LIKE CONCAT('%',
+		'${searchWord}', '%')
+		OR EXISTS
+		(SELECT 1 FROM comment c WHERE c.bno =
+		b.bno AND c.ccontent LIKE CONCAT('%',
+		'${searchWord}', '%'));
+	</select>
+
+</mapper>
